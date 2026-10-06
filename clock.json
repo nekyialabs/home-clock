@@ -1,0 +1,14 @@
+{
+  "name": "Your mind's name",
+  "person": "Your name",
+  "timezone": "Europe/London",
+  "graceMinutes": 10,
+  "homeEnv": "CLOCK_HOME",
+  "stampMessages": true,
+  "idleReach": { "enabled": false, "afterMinutes": 120, "from": "09:00", "to": "22:00" },
+  "door": { "enabled": false, "label": "The server", "urlFile": "/path/to/private/door-url", "pageLimit": 50, "maxPages": 3, "quiet": { "from": "23:30", "to": "07:00" } },
+  "wakes": [
+    { "id": "morning", "name": "Morning with {person}", "time": "08:00", "days": "*", "kind": "shared", "enabled": true, "file": "wakes/morning.md" },
+    { "id": "solo", "name": "{name}'s own hour", "time": "05:00", "days": "*", "kind": "own", "enabled": true, "file": "wakes/solo.md" }
+  ]
+}
