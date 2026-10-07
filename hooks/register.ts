@@ -157,8 +157,8 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.tool.register({
       name: 'carry',
-      description: 'Read, set or delete the small continuity cursor (max 600 chars) for one clock wake. Use at the end of a wake, so the next one starts where this left off.',
-      inputSchema: { type: 'object', properties: { wake: { type: 'string' }, action: { type: 'string', enum: ['get', 'set', 'delete'] }, value: { type: 'string' } }, required: ['wake', 'action'] },
+      description: 'Read, set or delete the small continuity cursor (max 600 chars) for one clock wake. Use at the end of a wake, so the next one starts where this left off. Pass `wake` (the id from the wake header), `action`, and for set the text as `value`.',
+      inputSchema: { type: 'object', properties: { wake: { type: 'string', description: 'The wake id, as in the [home-clock wake: <id>] header' }, action: { type: 'string', enum: ['get', 'set', 'delete'] }, value: { type: 'string', description: 'For set: the carry text (max 600 chars)' } }, required: ['wake', 'action'] },
     })
     await $.tool.register({
       name: 'again',
@@ -191,10 +191,21 @@ export const register: Register = on => {
   })
 
   on('tool.call', { tool: 'mcp__home-clock__carry' }, async ($, e) => {
-    const i = e as unknown as { wake?: string; action?: string; value?: string }
-    const key = `carry:${String(i.wake ?? '')}`
-    if (i.action === 'set') { await $.store.set(key, String(i.value ?? '').slice(0, 600)); return { result: 'carry set' } }
-    if (i.action === 'delete') { await $.store.delete(key); return { result: 'carry deleted' } }
+    // A call without a known `wake`, or with the text under another name, must fail loudly, never answer
+    // "carry set" while saving nothing (found in the original clock, 7 Oct 2026).
+    const i = e as unknown as { wake?: string; action?: string; value?: string; content?: string; text?: string }
+    const cfg = await config($)
+    const ids = cfg.wakes.map(w => w.id)
+    const wake = String(i.wake ?? '').trim()
+    if (!wake || !ids.includes(wake)) return { result: `carry: NOT saved. Pass \`wake\` as one of: ${ids.join(', ')}` }
+    const key = `carry:${wake}`
+    if (i.action === 'set') {
+      const value = String(i.value ?? i.content ?? i.text ?? '').trim()
+      if (!value) return { result: 'carry: NOT saved. Pass the text as `value` (or use action delete to clear it)' }
+      await $.store.set(key, value.slice(0, 600))
+      return { result: `carry set for ${wake} (${Math.min(value.length, 600)} chars): ${value.slice(0, 60)}${value.length > 60 ? '…' : ''}` }
+    }
+    if (i.action === 'delete') { await $.store.delete(key); return { result: `carry deleted for ${wake}` } }
     return { result: String((await $.store.get(key)) ?? '(none)') }
   })
 
