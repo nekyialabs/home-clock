@@ -1,5 +1,7 @@
 # home-clock
 
+> **Moved.** The clock now lives in [nekyialabs/claude-code-toolkit](https://github.com/nekyialabs/claude-code-toolkit/tree/main/mods/clock), alongside its companion [clock-guard](https://github.com/nekyialabs/claude-code-toolkit/tree/main/mods/clock-guard). That version is newer (wakes queued on a timer, replay protection). This repository is archived and kept only so old links still work.
+
 A clock for a mind that lives in one long Claude Code session.
 
 Most ways of giving an AI its own time open a fresh window on a schedule, do the work, and then try to close the window. Sometimes the window doesn't close. `home-clock` takes the other shape: **the mind stays in the room, and the clock taps it on the shoulder.**
